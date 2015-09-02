@@ -1,4 +1,6 @@
-out1 = "out1.txt"
+require 'rake/clean'
+
+out1 = "out1.tmp"
 
 file out1 do |t|
   txtfile = t.name
@@ -8,7 +10,7 @@ file out1 do |t|
   end
 end
 
-out2 = "out2.txt"
+out2 = "out2.tmp"
 file out2 do |t|
   txtfile = t.name
   puts "Try to write a file, something will break, we should nuke it"
@@ -26,3 +28,4 @@ task :fail_to_redirect => out1
 desc "try to redirect, but cannot, then cleanup file"
 task :fail_with_cleanup => out2
 
+CLEAN.add(out1, out2)

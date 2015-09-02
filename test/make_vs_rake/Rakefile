@@ -1,20 +1,20 @@
 require 'rake/clean'
-CLEAN.add("rf_[a-z]")
+CLEAN.add("rf_[a-z].tmp")
 verbose(1)
 
-file 'rf_a' do ; puts "filetask a" ; end 
-file 'rf_b' => 'rf_a' do ; puts "filetask b" ; end 
-file 'rf_c' => 'rf_b' do ; puts "filetask c" ; end 
-file 'rf_d' => 'rf_c' do ; puts "filetask d" ; end 
+file 'rf_a.tmp' do ; puts "filetask a" ; end 
+file 'rf_b.tmp' => 'rf_a.tmp' do ; puts "filetask b" ; end 
+file 'rf_c.tmp' => 'rf_b.tmp' do ; puts "filetask c" ; end 
+file 'rf_d.tmp' => 'rf_c.tmp' do ; puts "filetask d" ; end 
 
 task :default => 'rf_d'
 
 task :build do
-  ('a'..'d').map { |x| sh "touch rf_#{x}" }
+  ('a'..'d').map { |x| sh "touch rf_#{x}.tmp" }
 end
 
 task :rm_middle do
-    sh "rm rf_[bc]"
+    sh "rm rf_[bc].tmp"
 end
 
-task :touchb do ; sh "touch rf_b" ; end
+task :touchb do ; sh "touch rf_b.tmp" ; end
