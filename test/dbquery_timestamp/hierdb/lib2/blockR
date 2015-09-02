@@ -1,0 +1,8 @@
+{
+    "shapes": [
+	{ "type": "square",
+	  "color": "blue",
+	  "location": [0, 0, 1, 1]
+	}
+    ]
+}

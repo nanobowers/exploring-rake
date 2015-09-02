@@ -1,0 +1,20 @@
+# -*- ruby -*-
+require 'rake/application'
+require 'pp'
+
+pp Rake.application
+
+unless Rake.application.options.show_tasks 
+  puts "Doing something complicated and expensive, perhaps database init?"
+  system "sleep 3"
+end
+
+[:a,:b,:c].each do |tgen|
+  desc "The #{tgen} task"
+  task tgen do
+    puts "run #{tgen}"
+  end
+end
+
+task :default => [:a, :b, :c]
+

@@ -1,0 +1,44 @@
+
+desc "fail before doing 2nd exec"
+task :fail do
+  puts "About to fail"
+  ruby %{-e 'exit 5'}
+  ## we will never get here...
+  sh "true"
+end
+
+desc "pass both exec's"
+task :pass do
+  puts "About to fail"
+  ruby %{-e 'exit 0'}
+  sh "true"
+end
+
+desc "captured fail before doing 2nd exec, custom message"
+task :fail_gracefully do
+  puts "About to fail, but will try to recover"
+  ruby %{-e 'exit 5'} do |ok, pstatus|
+    if !ok
+      puts "Custom failure with error code #{pstatus.exitstatus}"
+      fail "raising an exception here.."
+    else
+      puts "Everything worked fine"
+    end
+  end
+  sh "true"
+end
+
+desc "captured pass before doing 2nd exec, custom message, continues"
+task :pass_gracefully do
+  puts "About to fail, but will try to recover"
+  ruby %{-e 'exit 0'} do |ok, pstatus|
+    if !ok
+      puts "Custom failure with error code #{pstatus.exitstatus}"
+      fail "raising an exception here.."
+    else
+      puts "Everything worked fine"
+    end
+  end
+  sh "true"
+end
+

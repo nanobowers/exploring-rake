@@ -1,0 +1,156 @@
+# -*- ruby -*-
+
+require 'json'
+require 'pp'
+
+module Kernel
+  def file_to_jsdata filename
+    json_string = File.readlines(filename).join('')
+    return JSON.parse(json_string, :symbolize_names => true)
+  end
+end
+
+class JsonHierRef
+
+  def initialize file, jdb
+    @filepath, @jdb = file, jdb
+    @data = file_to_jsdata(@filepath)
+    @timestamp = File.mtime(@filepath)
+
+  end
+  def get_timestamp
+    late_ts = @timestamp
+    if @data[:instances]
+      @data[:instances].each do |inst|
+        c = @jdb.get_cell(inst[:libref], inst[:blkref])
+        ts = c.get_timestamp
+        late_ts = late_ts > ts ? late_ts : ts
+      end
+    end
+    puts "#@filepath #{late_ts}"
+    return late_ts
+  end
+end
+
+class JsonShapeDb 
+
+  def initialize (directory_file)
+    @libstruct = file_to_jsdata(directory_file)
+    @cdata = Hash.new
+  end
+  
+  def get_libs 
+    return @libstruct[:libraries] || raise("can't get libs")
+  end
+
+  def path_to_lib (lib)
+    libs = get_libs
+    matchlibs = libs.select {|l| l[:name] == lib }
+    if matchlibs.length == 0
+      raise "could not find lib '#{lib}'"
+    elsif matchlibs.length > 1
+      raise "lib '#{lib}'defined multiple times"
+    end
+    libpath = matchlibs.first[:path]
+    raise "'path' key for lib '#{lib}' must be a string" unless libpath.is_a? String
+    return libpath
+  end
+
+  def get_cell (libname, cellname)
+    unless @cdata.has_key? cellname
+      cellfilepath = find_cellpath(libname, cellname)       # does cell exist in lib?
+      @cdata[cellname] = JsonHierRef.new(cellfilepath, self)
+    end
+    return @cdata[cellname]
+  end
+
+  def find_cellpath (libname, cellname)
+    libpath = path_to_lib libname
+    return File.join(libpath,cellname)
+  end
+
+  def exist? (libname, cellname)
+    File.exist? find_cellpath(libname,cellname)
+  end
+
+  def get_timestamp (libname, cellname)
+    c = get_cell(libname, cellname)
+    c.get_timestamp
+  end
+  
+end
+
+class JsonShapeDbTask < Rake::Task
+
+  # Is this file task needed?  Yes if it doesn't exist, or if its time stamp
+  # is out of date.
+  def needed?
+    puts "jsdb: checking if needed #{name}"
+    if name=~/^jsdb::(\S+)\/(\S+)$/
+      @jslib, @jscell = $1, $2
+    else
+      raise "invalid jdb name" 
+    end
+    puts "jsdb: has jsdb for #@jslib / #@jscell ? #{$jsdb.exist?(@jslib,@jscell)}"
+    isneeded = !($jsdb.exist?(@jslib,@jscell)) || out_of_date?(timestamp)
+    puts "jsdb: isneeded? #{isneeded}"
+    isneeded
+  end
+
+  # Time stamp for file task.
+  def timestamp
+    if $jsdb.exist?(@jslib,@jscell)
+      $jsdb.get_timestamp(@jslib,@jscell)
+    else
+      Rake::EARLY
+    end
+  end
+
+  private
+
+  # Are there any prerequisites with a later time than the given time stamp?
+  def out_of_date?(stamp)
+    puts "jsdb: checking_out_of_date"
+    @prerequisites.each do |pr|
+      p pr
+    end
+    @prerequisites.any? { |n| application[n, @scope].timestamp > stamp }
+  end
+end
+
+def jsdb_task(*args, &block)
+  JsonShapeDbTask.define_task(*args, &block)
+end
+
+
+$jsdb = JsonShapeDb.new("./directory.json")
+
+
+task :retouch_lower do
+  sh "touch -t 201401010000 ./hierdb/lib1/top"
+  sh "touch -t 201404010000 ./hierdb/lib2/blockL"
+  sh "touch -t 201403010000 ./hierdb/lib2/blockC"
+  sh "touch -t 201402010000 ./hierdb/lib2/blockR"
+  sh "touch -t 201401010000 ./top.genfile"
+end
+
+#jsdb_task("jsdb::lib1/dummy1")
+#jsdb_task("jsdb::lib1/dummy2")
+
+#jsdb_task("jsdb::lib1/top" => "jsdb::lib1/dummy1") do
+#  puts "create jcell-top from jcell-xxx"
+#end
+
+
+jsdb_task("jsdb::lib1/top") do
+
+  puts "run jcell"
+end
+
+file "top.genfile" => "jsdb::lib1/top" do |t|
+  t.investigation
+  puts "creating genfile"
+  sh "touch #{t.name}"
+end
+
+task :default => "top.genfile"

@@ -1,0 +1,20 @@
+require 'rake/clean'
+CLEAN.add("rf_[a-z]")
+verbose(1)
+
+file 'rf_a' do ; puts "filetask a" ; end 
+file 'rf_b' => 'rf_a' do ; puts "filetask b" ; end 
+file 'rf_c' => 'rf_b' do ; puts "filetask c" ; end 
+file 'rf_d' => 'rf_c' do ; puts "filetask d" ; end 
+
+task :default => 'rf_d'
+
+task :build do
+  ('a'..'d').map { |x| sh "touch rf_#{x}" }
+end
+
+task :rm_middle do
+    sh "rm rf_[bc]"
+end
+
+task :touchb do ; sh "touch rf_b" ; end

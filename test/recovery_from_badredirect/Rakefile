@@ -1,0 +1,28 @@
+out1 = "out1.txt"
+
+file out1 do |t|
+  txtfile = t.name
+  puts "Try to write a file, something will break"
+  sh "baz > #{txtfile}" do |ok, pstatus|
+    
+  end
+end
+
+out2 = "out2.txt"
+file out2 do |t|
+  txtfile = t.name
+  puts "Try to write a file, something will break, we should nuke it"
+  sh "baz > #{txtfile}" do |ok, pstatus|
+    if !ok 
+      puts "cleaning up"
+      File.unlink(txtfile)
+    end
+  end
+end
+
+desc "try to redirect, but cannot"
+task :fail_to_redirect => out1
+
+desc "try to redirect, but cannot, then cleanup file"
+task :fail_with_cleanup => out2
+

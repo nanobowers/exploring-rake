@@ -1,0 +1,10 @@
+{
+    "libraries": [
+	{ "name": "lib1",
+	  "path": "./hierdb/lib1"
+	},
+	{ "name": "lib2",
+	  "path": "./hierdb/lib2"
+	}
+    ]
+}

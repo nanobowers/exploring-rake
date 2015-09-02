@@ -1,0 +1,50 @@
+module Rake
+
+  # Modification of multi-task to define using a max-threads on a 
+  # per-task basis
+  #
+  class MultiTaskN < MultiTask
+    attr_accessor :max_threads, :thread_pool
+    def initialize(task_name, app)
+      @max_threads = 5
+      @thread_pool = ThreadPool.new(5)
+      super task_name, app
+    end
+
+    def self.define_task(threads,*args, &block)
+      unless threads.is_a? Integer and threads > 0
+        raise ArgumentError "threads should be an Integer > 0" 
+      end
+      t = Rake.application.define_task(self, *args, &block)
+      t.max_threads = threads
+      t.thread_pool = ThreadPool.new(threads)
+      return t
+    end
+    
+    private
+    def invoke_prerequisites_concurrently(task_args, invocation_chain)# :nodoc:
+      futures = prerequisite_tasks.map do |p|
+        prereq_args = task_args.new_scope(p.arg_names)
+        @thread_pool.future(p) do |r|
+          r.invoke_with_call_chain(prereq_args, invocation_chain)
+        end
+      end
+      futures.each { |f| f.value }
+    end
+
+  end
+
+end
+
+letter_tasks = ('a'..'y').to_a
+
+letter_tasks.each do |tname|
+  task tname do |t|
+    puts t.name
+    sh "sleep 1"
+  end
+end
+
+#Rake::MultiTask.define_task( :top => letter_tasks )
+Rake::MultiTaskN.define_task(13, :top => letter_tasks )
+

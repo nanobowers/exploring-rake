@@ -1,0 +1,26 @@
+{
+    "_comment": "I am the top-cell",
+    "instances": [
+	{ "name": "left",
+	  "libref": "lib2",
+	  "blkref": "blockL",
+	  "position": [0,0]
+	},
+	{ "name": "center",
+	  "libref": "lib2",
+	  "blkref": "blockC",
+	  "position": [1,0]
+	},
+	{ "name": "right",
+	  "libref": "lib2",
+	  "blkref": "blockR",
+	  "position": [2,0]
+	}
+    ],
+    "shapes": [
+	{ "type": "square",
+	  "color": "red",
+	  "location": [0, 0, 1, 1]
+	}
+    ]
+}

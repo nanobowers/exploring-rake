@@ -1,0 +1,13 @@
+# -*- ruby -*-
+
+
+tlist = (1..10).map { |x| "task_#{x}" }
+
+tlist.each do |gen_task_name|
+  task :top do |t|
+    sh "echo #{gen_task_name}; sleep 1;"
+  end
+end
+
+task :default => :top
+
