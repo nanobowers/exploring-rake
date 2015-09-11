@@ -37,7 +37,6 @@ module Rake
 end
 
 letter_tasks = ('a'..'y').to_a
-
 letter_tasks.each do |tname|
   task tname do |t|
     puts t.name
@@ -45,6 +44,11 @@ letter_tasks.each do |tname|
   end
 end
 
-#Rake::MultiTask.define_task( :top => letter_tasks )
-Rake::MultiTaskN.define_task(13, :top => letter_tasks )
+num_tasks = 6
+desc "Write letters, running #{num_tasks} at a time"
+Rake::MultiTaskN.define_task(num_tasks, :top_limit => letter_tasks )
+
+## original multitask
+Rake::MultiTask.define_task( :top_nolimit => letter_tasks )
+
 

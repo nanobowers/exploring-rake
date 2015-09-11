@@ -1,9 +1,10 @@
 require 'rake/clean'
 
-100.times do |num|
+40.times do |num|
+  sleepval = sprintf("%0.2f",num/100.0)
   taskname = "task_#{num}"
   task taskname do |t|
-    sh "MYNUM=#{num}; export MYNUM; sleep 0.#{num} ; echo ruby-num was #{num} env-num was $MYNUM >> x.tmp"
+    sh "MYNUM=#{num}; export MYNUM; sleep #{sleepval} ; echo ruby-num was #{num} env-num was $MYNUM >> x.tmp"
   end
   task :default => taskname
 end

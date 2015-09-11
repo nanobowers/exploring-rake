@@ -1,8 +1,8 @@
 # -*- ruby -*-
-require 'rake/application'
+#require 'rake/application'
 require 'pp'
 
-pp Rake.application
+#pp Rake.application
 
 unless Rake.application.options.show_tasks 
   puts "Doing something complicated and expensive, perhaps database init?"

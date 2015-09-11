@@ -7,7 +7,7 @@ file 'rf_b.tmp' => 'rf_a.tmp' do ; puts "filetask b" ; end
 file 'rf_c.tmp' => 'rf_b.tmp' do ; puts "filetask c" ; end 
 file 'rf_d.tmp' => 'rf_c.tmp' do ; puts "filetask d" ; end 
 
-task :default => 'rf_d'
+task :default => 'rf_d.tmp'
 
 task :build do
   ('a'..'d').map { |x| sh "touch rf_#{x}.tmp" }
