@@ -1,0 +1,28 @@
+
+## rewire internals of rake so that the internal rake
+## system call (called via Rake's 'sh' command) runs bash
+## instead of sh
+
+require 'shellwords'
+
+module Rake::AltSystem
+  def self.system cmd
+    escaped_cmd = Shellwords.escape(cmd)
+    Kernel.system "bash -c #{escaped_cmd}"
+  end
+end
+
+
+## would otherwise fail without bash, special features
+## that sh doesnt support
+desc "diff two gzipped files, report true"
+task :diffsh do
+  sh "diff <(zcat text1.txt.gz) <(zcat text2.txt.gz) || true"
+end
+
+## inline bash workaround, unneeded with above fix
+#task :diffbash do
+#  sh "bash -c 'diff <(zcat text1.txt.gz) <(zcat text2.txt.gz) || true'"
+#end
+
+task :default => :diffsh
